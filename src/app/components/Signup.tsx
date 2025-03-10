@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 
 export const Signup = () => {
   return (
@@ -6,14 +6,7 @@ export const Signup = () => {
       <h2 className="text-2xl font-bold text-center mb-6 ">Join Lightning!</h2>
 
       <div className="space-y-4">
-        <button className="w-full flex items-center justify-center gap-2 border border-gray-300 p-3 rounded-md">
-          <Image src="/google-icon.png" alt="Google" className="w-5 h-5" />
-          Sign up with Google
-        </button>
-        <button className="w-full flex items-center justify-center gap-2 border border-gray-300 p-3 rounded-md">
-          <Image src="/apple-icon.png" alt="Apple" className="w-5 h-5" />
-          Sign up with Apple
-        </button>
+        
       </div>
 
       <div className="flex items-center my-6">

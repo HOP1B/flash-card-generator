@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 const sql = neon(process.env.DATABASE_URL!);
 
-// GET all users (for testing purposes)
+
 export const GET = async () => {
   try {
     const result = await sql`SELECT * FROM useraccount`;
@@ -20,7 +20,7 @@ export const GET = async () => {
   }
 };
 
-// POST - Sign Up
+//  Sign Up
 export const POST = async (req: NextRequest) => {
   const { email, password } = await req.json();
 
