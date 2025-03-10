@@ -1,9 +1,10 @@
-"use client"
-
+'use client';
+import { useAuth } from "@clerk/nextjs";
 import { Maincreater } from "./maincreate";
 import { Signup } from "./components/Signup";
 
-export default function Page() {
+export default function Home() {
+  const {} = useAuth();
   return (
     <>
       <Maincreater />
