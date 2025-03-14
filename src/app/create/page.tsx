@@ -1,55 +1,109 @@
 "use client";
 import { PdfUploader } from "./pdfUploader";
 import { useState } from "react";
-import { Forward } from "lucide-react";
+import { Forward, File } from "lucide-react";
 import Link from "next/link";
 import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
-import { File } from "lucide-react";
+
+interface FlashcardResponse {
+  flashcards: string[];
+}
 
 const CreateLesson = () => {
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [videoId, setVideoId] = useState<string>("");
+  const [flashcards, setFlashcards] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const extractVideoId = (url: string): string => {
+    const regex =
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : "";
+  };
 
   const handleFileSelect = (file: File) => {
     setSelectedFiles((prev) => [...prev, file]);
   };
 
-  const handleSubmit = async () => {
-    if (!selectedFiles.length && !description.trim()) {
-      toast.error("Please add a description or file to upload");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!selectedFiles.length && !videoId.trim()) {
+      toast.error("Please add a YouTube URL or file to upload");
+      setLoading(false);
       return;
     }
 
-    setIsUploading(true);
+    if (selectedFiles.length) {
+      setIsUploading(true);
+      const formData = new FormData();
+      selectedFiles.forEach((file) => formData.append("pdf", file));
+      formData.append("description", description);
 
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("pdf", file));
-    formData.append("description", description);
+      try {
+        const response: AxiosResponse = await axios.post(
+          "/api/file",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-    try {
-      const response: AxiosResponse = await axios.post("/api/file", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (response.status === 200) {
-        toast.success("Files uploaded successfully!");
-        setDescription("");
-        setSelectedFiles([]);
+        if (response.status === 200) {
+          toast.success("Files uploaded successfully!");
+          setDescription("");
+          setSelectedFiles([]);
+        }
+      } catch (error) {
+        toast.error("Failed to upload files");
+        console.error("Upload error:", error);
+      } finally {
+        setIsUploading(false);
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("Failed to upload files");
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
+    } else {
+      setLoading(false);
     }
   };
 
   const removeFile = (fileName: string) => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
+  };
+
+  const generateFlashcards = async () => {
+    setLoading(true);
+    try {
+      const response: AxiosResponse<FlashcardResponse> = await axios.post(
+        "/api/youtubeUrl",
+        { url: `https://www.youtube.com/watch?v=${videoId}` },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setFlashcards(response.data.flashcards);
+      toast.success("Flashcards generated successfully!");
+    } catch (error: unknown) {
+      console.error("API Error:", error);
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.error || "Failed to generate flashcards"
+        );
+      } else {
+        toast.error("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,20 +123,27 @@ const CreateLesson = () => {
               value={description}
               className="resize-none border text-foreground p-4 w-[768px] h-[165px] rounded-xl"
               placeholder="Example: Paste a YouTube link or something"
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
-            <div className="absolute flex bottom-4 left-5 gap-[675px] items-center">
+              onChange={(e) => {
+                setDescription(e.target.value);
+                const id = extractVideoId(e.target.value);
+                setVideoId(id);
+                if (!id) setFlashcards([]);
+              }}
+            />
+            <div className="absolute flex bottom-4 left-5 gap-2 items-center">
               <PdfUploader
-                onPdfSelect={(file) => handleFileSelect(file)}
+                onPdfSelect={handleFileSelect}
                 onFileNameChange={() => {}}
               />
-              <button
-                onClick={handleSubmit}
-                disabled={isUploading}
-                className="rounded-full bg-[#caf0f8] h-9 w-9 border items-center justify-center flex border-[#0E6BA8] disabled:opacity-50"
-              >
-                <Forward style={{ color: "#0E6BA8" }} />
-              </button>
+              {selectedFiles.length > 0 && (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isUploading || loading}
+                  className="rounded-full bg-[#caf0f8] h-9 w-9 items-center justify-center flex disabled:opacity-50"
+                >
+                  <Forward style={{ color: "#00072D" }} />
+                </button>
+              )}
             </div>
           </div>
 
@@ -105,6 +166,31 @@ const CreateLesson = () => {
               </div>
             ))}
           </div>
+
+          {videoId && (
+            <div className="mt-4 w-[768px]">
+              <button
+                onClick={generateFlashcards}
+                disabled={loading}
+                className="bg-[#0353a4] hover:bg-[#023e7d] text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+              >
+                {loading ? "Generating..." : "Generate"}
+              </button>
+
+              {flashcards.length > 0 && (
+                <div className="mt-4">
+                  {flashcards.map((flashcard, index) => (
+                    <div key={index}>
+                      <pre className="text-sm whitespace-pre-wrap">
+                        {flashcard}
+                      </pre>
+                      <hr />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
