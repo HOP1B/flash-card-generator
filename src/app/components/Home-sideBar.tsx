@@ -86,7 +86,7 @@ export const SideBar = () => {
           <SideBarList />
         </ul>
       </div>
-      <Profile/>
+      <Profile />
     </div>
   );
 };

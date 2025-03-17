@@ -1,7 +1,7 @@
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
 
-export const Maincreater = () => {
+export default function Maincreater() {
   return (
     <div className="min-h-screen w-full flex justify-center items-center">
       <Link href={"/create"} className="cursor-pointer">
