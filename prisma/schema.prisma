@@ -65,3 +65,4 @@ model TopicQuizOption {
   question   TopicQuizQuestion @relation(fields: [questionId], references: [id])
   questionId String
 }
+

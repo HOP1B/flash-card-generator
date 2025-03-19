@@ -2,7 +2,7 @@ import { Header } from "./Header";
 
 export default function HomeQuestions () {
     return(
-        <div>
+        <div className="w-full">
             <Header/>
             <div>
                 
