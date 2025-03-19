@@ -50,10 +50,13 @@ export const SideBar = () => {
                 <Plus className="text-[#777777]" />
               </Button>
             </div>
-            <div className="w-[640px] p-[30px] z-30 absolute left-[500px] bg-white rounded-xl ">
+            <div className="w-[640px] p-[30px] z-30 absolute left-[600px] bg-white rounded-xl ">
               <h1 className="text-[#1d1d1d] font-inter text-xl font-bold mb-6 flex items-center justify-between">
                 New Workspace
-                <Button className="bg-inherit hover:bg-[#dcdcdc] p-2 shadow-none text-[#5e5e5e] ">
+                <Button
+                  className="bg-inherit hover:bg-[#dcdcdc] p-2 shadow-none text-[#5e5e5e] "
+                  onClick={() => setShowWorkSpace(false)}
+                >
                   <X size={30} />
                 </Button>
               </h1>
@@ -69,7 +72,10 @@ export const SideBar = () => {
                   />
                 </label>
                 <div className="flex justify-between ">
-                  <Button className="w-[283px] bg-inherit hover:bg-[#dcdcdc] text-[#1d1d1d] border border-[#1d1d1d] py-3 px-4 shadow-none text-base font-inter font-semibold ">
+                  <Button
+                    className="w-[283px] bg-inherit hover:bg-[#dcdcdc] text-[#1d1d1d] border border-[#1d1d1d] py-3 px-4 shadow-none text-base font-inter font-semibold "
+                    onClick={() => setShowWorkSpace(false)}
+                  >
                     Cancel
                   </Button>
                   <Button className="w-[283px] bg-[#6f47eb] hover:bg-[#5f3cca] text-white py-3 px-4 shadow-none text-base font-inter font-semibold ">
@@ -85,7 +91,7 @@ export const SideBar = () => {
           <SideBarList />
         </ul>
       </div>
-      <Profile/>
+      <Profile />
     </div>
   );
 };
