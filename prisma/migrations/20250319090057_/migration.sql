@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Topic" ALTER COLUMN "quizId" DROP NOT NULL;
