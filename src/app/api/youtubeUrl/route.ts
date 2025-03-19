@@ -4,6 +4,7 @@ import {
   extractVideoId,
   generateFlashcards,
   generateQuizzes,
+  generateSummary,
   getYouTubeTranscript,
 } from "./utils";
 
@@ -28,15 +29,20 @@ export async function POST(req: NextRequest) {
 
     const transcript = await getYouTubeTranscript(videoId);
     const rawQuizzes = (await generateQuizzes(transcript)).slice(1);
-    const rawFlashcards = (await generateFlashcards(transcript)).slice(1)
+    const rawFlashcards = (await generateFlashcards(transcript)).slice(1);
+    const rawSummaries = (await generateSummary(transcript)).slice(1);
     const quizzes = rawQuizzes
-      .map((flashcard) => convertResponseToQna(flashcard))
+      .map((quiz) => convertResponseToQna(quiz))
       .flat();
     console.log(JSON.stringify(quizzes, null, 2));
     const flashcards = rawFlashcards
       .map((flashcard) => convertResponseToQna(flashcard))
       .flat();
     console.log(JSON.stringify(flashcards, null, 2));
+    const summaries = rawSummaries
+      .map((summary) => convertResponseToQna(summary))
+      .flat();
+    console.log(JSON.stringify(summaries, null, 2));
 
     return NextResponse.json({ flashcards: [] }, { status: 200 });
   } catch (error) {
