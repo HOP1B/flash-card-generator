@@ -27,12 +27,12 @@ model Topic {
   filePath   String?
   userId     String
   groupId    String
+  title      String
   summary    String
   group      Group            @relation(fields: [groupId], references: [id])
   createdAt  DateTime         @default(now())
   flashcards TopicFlashCard[]
-  quizId     String?          @unique
-  quiz       TopicQuiz?
+  quizzes    TopicQuiz[]
 }
 
 model TopicFlashCard {
@@ -45,8 +45,8 @@ model TopicFlashCard {
 
 model TopicQuiz {
   id        String              @id @default(nanoid())
-  topic     Topic?              @relation(fields: [topicId], references: [quizId])
-  topicId   String              @unique
+  topic     Topic               @relation(fields: [topicId], references: [id])
+  topicId   String
   questions TopicQuizQuestion[]
 }
 

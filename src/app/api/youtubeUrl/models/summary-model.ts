@@ -21,7 +21,7 @@ const response =
   "***Structured Summary***\n" +
   "\n" +
   "\n" +
-  "**Title**: Life Without Sunlight: The Consequences of a Volcanic Winter\n" +
+  "**Title**: Surviving Without Sunlight\n" +
   "\n" +
   "\n" +
   "**Main Theme**: The video explores the devastating effects of a hypothetical scenario where a massive volcanic eruption blocks sunlight, plunging humanity into a perpetual state of darkness. \n" +
