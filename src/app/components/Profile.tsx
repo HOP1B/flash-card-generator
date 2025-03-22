@@ -4,6 +4,7 @@ import { SignOutButton, useSession } from "@clerk/nextjs";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { LogOut } from "lucide-react";
 
+
 export const Profile = () => {
   const { session } = useSession();
   return (
@@ -12,7 +13,7 @@ export const Profile = () => {
         <AvatarImage src={session?.user.imageUrl} />
         <AvatarFallback>{session?.user.fullName![0]} </AvatarFallback>
       </Avatar>
-      <div className="mr-14">
+      <div className="mr-10">
         <div className=" text-[#1d1d1d] text-sm font-semibold">
           {session?.user.fullName}
         </div>
@@ -22,7 +23,9 @@ export const Profile = () => {
       </div>
 
       <SignOutButton>
-        <LogOut size={20} className="ml-10 hover:cursor-pointer" />
+        <div className="hover:cursor-pointer">
+          <LogOut size={20} />
+        </div>
       </SignOutButton>
     </div>
   );
