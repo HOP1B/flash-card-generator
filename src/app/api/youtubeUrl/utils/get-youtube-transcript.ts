@@ -8,3 +8,4 @@ export async function getYouTubeTranscript(videoId: string): Promise<string> {
     throw new Error(`Failed to fetch transcript: ${(error as Error).message}`);
   }
 }
+ 
