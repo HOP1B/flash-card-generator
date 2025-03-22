@@ -4,6 +4,9 @@ export default function HomeQuestions () {
     return(
         <div>
             <Header/>
+            <div>
+                
+            </div>
         </div>
     )
 }

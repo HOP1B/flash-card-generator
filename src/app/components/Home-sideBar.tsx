@@ -7,6 +7,7 @@ import { SideBarList } from "../click/SideBarList";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Profile } from "./Profile";
+import Link from "next/link";
 
 export const SideBar = () => {
   const [showWorkSpace, setShowWorkSpace] = useState(false);
@@ -15,9 +16,7 @@ export const SideBar = () => {
     <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter relative ">
       <div className="h-[90px] p-5 "></div>
       <div className="flex">
-        <Button className=" bg-[#0353a4] text-base font-semibold w-[234px] py-[10px] px-3 rounded-r-none hover:bg-[#023e7d] ">
-          <Plus /> New Lesson{" "}
-        </Button>
+        <Link href={"/create"} className=" bg-[#0353a4] text-base font-semibold w-[234px] py-[10px] px-3 rounded-r-none hover:bg-[#023e7d] "/>
         <Button className="bg-[#023e7d] rounded-l-none w-9 hover:bg-[#023e7d] ">
           <ChevronDown />
         </Button>
