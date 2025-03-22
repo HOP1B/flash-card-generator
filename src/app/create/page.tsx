@@ -5,17 +5,16 @@ import { Forward, File } from "lucide-react";
 import Link from "next/link";
 import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
-
-interface FlashcardResponse {
-  flashcards: string[];
-}
+import { useSession } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 const CreateLesson = () => {
+  const router = useRouter();
+  const { session } = useSession();
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [videoId, setVideoId] = useState<string>("");
-  const [flashcards, setFlashcards] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   const extractVideoId = (url: string): string => {
@@ -80,18 +79,21 @@ const CreateLesson = () => {
   const generateFlashcards = async () => {
     setLoading(true);
     try {
-      const response: AxiosResponse<FlashcardResponse> = await axios.post(
+      const response: AxiosResponse<{ id: string }> = await axios.post(
         "/api/youtubeUrl",
-        { url: `https://www.youtube.com/watch?v=${videoId}` },
+        {
+          url: `https://www.youtube.com/watch?v=${videoId}`,
+          userId: session?.user.id,
+          groupId: "dccxYxG1hYsBkRnimj8Nf",
+        },
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
-      setFlashcards(response.data.flashcards);
-      toast.success("Flashcards generated successfully!");
+      toast.success("Video response generated successfully!");
+      router.replace(`/topics/${response.data.id}`);
     } catch (error: unknown) {
       console.error("API Error:", error);
       if (axios.isAxiosError(error)) {
@@ -108,13 +110,15 @@ const CreateLesson = () => {
 
   return (
     <>
-      <header className="flex gap-2 mt-4 px-6">
-        <Link href={"/"}>home / </Link>
-        <p className="font-bold"> New lesson</p>
+      <header className="flex mt-4 px-6">
+        <Link href={"/dashboard"}>home/</Link>
+        <p className="font-bold"> New</p>
       </header>
-      <div className="min-h-screen w-full flex justify-center items-center flex-col">
-        <div className="flex flex-col items-center gap-2 m-7">
-          <h1 className="font-bold text-2xl">Create a lesson</h1>
+      <div className="min-h-screen flex justify-center items-center flex-col w-full">
+        <div className="flex flex-col items-center justify-center gap-2 m-7">
+          <h1 className="font-bold text-2xl">
+            Create a Flashcard, Quiz and Summary
+          </h1>
           <p>Add PDFs and YouTube links.</p>
         </div>
         <div>
@@ -122,12 +126,12 @@ const CreateLesson = () => {
             <textarea
               value={description}
               className="resize-none border text-foreground p-4 w-[768px] h-[165px] rounded-xl"
-              placeholder="Example: Paste a YouTube link or something"
+              placeholder="Paste a YouTube link"
               onChange={(e) => {
                 setDescription(e.target.value);
                 const id = extractVideoId(e.target.value);
                 setVideoId(id);
-                if (!id) setFlashcards([]);
+                
               }}
             />
             <div className="absolute flex bottom-4 left-5 gap-2 items-center">
@@ -177,18 +181,6 @@ const CreateLesson = () => {
                 {loading ? "Generating..." : "Generate"}
               </button>
 
-              {flashcards.length > 0 && (
-                <div className="mt-4">
-                  {flashcards.map((flashcard, index) => (
-                    <div key={index}>
-                      <pre className="text-sm whitespace-pre-wrap">
-                        {flashcard}
-                      </pre>
-                      <hr />
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
