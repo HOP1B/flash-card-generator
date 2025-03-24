@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
       );
 
     const transcript = await getYouTubeTranscript(videoId);
-    console.log("Transcript:", transcript);
     if (!transcript) {
       return NextResponse.json(
         { error: "No transcript available for this video" },
@@ -51,7 +50,6 @@ export async function POST(req: NextRequest) {
     const rawQuizzes = (await generateQuizzes(transcript)).slice(1);
     const rawFlashcards = (await generateFlashcards(transcript)).slice(1);
     const rawSummaries = await generateSummary(transcript);
-    console.log("Raw Summaries:", rawSummaries);
 
     const quizzes = rawQuizzes.map((quiz) => convertResponseToQna(quiz)).flat();
     const flashcards = rawFlashcards

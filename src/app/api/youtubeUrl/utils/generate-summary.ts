@@ -5,28 +5,14 @@ export async function generateSummary(
 ): Promise<{ title: string; content: string }[]> {
   const response = await summaryModel.sendMessage(getSummaryPrompt(transcript));
   const summaryText = await response.response.text();
-  console.log("AI Response (raw):", summaryText);
-
-  // Test the regex explicitly
-  const titleRegex = /\*\*Title\*\*[:\s]*(.+?)(?=\n|$)/i;
-  console.log("Title Regex:", titleRegex);
+  // Extract the title correctly (ignores "Main Theme" or other headers)
+  const titleRegex = /(?:\*\*Title:\*\*|^Title:)\s*(.+)/im;
   const titleMatch = summaryText.match(titleRegex);
   const title = titleMatch ? titleMatch[1].trim() : "Untitled";
-  console.log("Title Match:", titleMatch);
-  console.log("Extracted Title:", title);
 
-  // Test content extraction explicitly
-  const mainThemeMarker = "**Main Theme**:";
-  const contentStartIndex = summaryText.indexOf(mainThemeMarker);
-  console.log("Main Theme Marker:", mainThemeMarker);
-  console.log("Content Start Index:", contentStartIndex);
 
-  const content =
-    contentStartIndex !== -1
-      ? summaryText.slice(contentStartIndex).trim()
-      : summaryText.replace(titleMatch ? titleMatch[0] : "", "").trim() ||
-        "No main theme available";
-  console.log("Extracted Content:", content);
-
-  return [{ title, content }];
+  // Remove title line from content
+  const contentWithoutTitle = summaryText.replace(titleRegex, "").trim();
+ 
+  return [{ title, content: contentWithoutTitle }];
 }
