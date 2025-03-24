@@ -24,7 +24,7 @@ export const GET = async () => {
 export const POST = async (req: NextRequest) => {
   const { title, userId } = await req.json();
 
-  const newTopic = await prisma.group.create({
+  const newTopic = await prisma.group.create({ 
     data: {
       name: title,
       userId,
