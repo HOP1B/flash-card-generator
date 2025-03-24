@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Header } from "./Header";
 
 const Ques = () => {
   const [selected, setSelected] = useState<string|null>(null);
@@ -11,6 +12,7 @@ const Ques = () => {
   
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
+      <Header/>
       <h2 className="text-lg font-semibold mb-2">Question</h2>
       <p className="text-gray-700">
         If you wanted invite someone to a Party, which phrase would be most

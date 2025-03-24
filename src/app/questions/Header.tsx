@@ -15,7 +15,7 @@ export const Header = () => {
         <p className="text-[#1d1d1d] text-sm font-semibold ml-[10px] flex items-center pl-[10px] h-8 border-l-2">Title</p>
       </div>
       <div className="flex gap-1">
-        <Button className="bg-inherit hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold focus:text-[#0353a4] focus:bg-[#98b8d998] shadow-none ">
+        <Button className="bg-inherit hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold focus:text-[#0353a4] focus focus:bg-[#98b8d998] shadow-none ">
           <BookOpenCheck /> Unit Guides
         </Button>
         <Button className="bg-inherit hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold focus:text-[#0353a4] focus:bg-[#98b8d998] shadow-none ">
