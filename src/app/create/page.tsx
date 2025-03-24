@@ -3,26 +3,20 @@ import { PdfUploader } from "./pdfUploader";
 import { useState } from "react";
 import { Forward, File } from "lucide-react";
 import Link from "next/link";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { toast } from "sonner";
 import { useSession } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { extractVideoId } from "@/app/api/youtubeUrl/utils/extract-video-id";
 
 const CreateLesson = () => {
   const router = useRouter();
   const { session } = useSession();
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [videoId, setVideoId] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const extractVideoId = (url: string): string => {
-    const regex =
-      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : "";
-  };
+  const [isUploading, setIsUploading] = useState(false);
+  const [videoId, setVideoId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleFileSelect = (file: File) => {
     setSelectedFiles((prev) => [...prev, file]);
@@ -32,7 +26,7 @@ const CreateLesson = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!selectedFiles.length && !videoId.trim()) {
+    if (!selectedFiles.length && !videoId) {
       toast.error("Please add a YouTube URL or file to upload");
       setLoading(false);
       return;
@@ -45,20 +39,13 @@ const CreateLesson = () => {
       formData.append("description", description);
 
       try {
-        const response: AxiosResponse = await axios.post(
-          "/api/file",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const response = await axios.post("/api/file", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-        if (response.status === 200) {
+        if (response.data?.id) {
           toast.success("Files uploaded successfully!");
-          setDescription("");
-          setSelectedFiles([]);
+          router.push(`/topics/${response.data.id}`);
         }
       } catch (error) {
         toast.error("Failed to upload files");
@@ -67,8 +54,6 @@ const CreateLesson = () => {
         setIsUploading(false);
         setLoading(false);
       }
-    } else {
-      setLoading(false);
     }
   };
 
@@ -76,36 +61,39 @@ const CreateLesson = () => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  const generateFlashcards = async () => {
+  const generateFromYouTube = async () => {
+    if (!videoId) {
+      toast.error("Please enter a valid YouTube URL");
+      return;
+    }
+
     setLoading(true);
     try {
-      const response: AxiosResponse<{ id: string }> = await axios.post(
-        "/api/youtubeUrl",
-        {
-          url: `https://www.youtube.com/watch?v=${videoId}`,
-          userId: session?.user.id,
-          groupId: "dccxYxG1hYsBkRnimj8Nf",
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      toast.success("Video response generated successfully!");
-      router.replace(`/topics/${response.data.id}`);
-    } catch (error: unknown) {
-      console.error("API Error:", error);
-      if (axios.isAxiosError(error)) {
-        toast.error(
-          error.response?.data?.error || "Failed to generate flashcards"
-        );
-      } else {
-        toast.error("An unexpected error occurred");
+      const response = await axios.post("/api/youtubeUrl", {
+        url: `https://www.youtube.com/watch?v=${videoId}`,
+        userId: session?.user.id,
+        groupId: "dccxYxG1hYsBkRnimj8Nf",
+      });
+
+      if (response.data?.id) {
+        toast.success("Learning materials created!");
+        router.push(`/topics/${response.data.id}`);
       }
+    } catch (error) {
+      toast.error("Failed to generate materials");
+      console.error("Generation error:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const value = e.target.value;
+    setDescription(value);
+    const id = extractVideoId(value);
+    setVideoId(id || "");
   };
 
   return (
@@ -127,12 +115,7 @@ const CreateLesson = () => {
               value={description}
               className="resize-none border text-foreground p-4 w-[768px] h-[165px] rounded-xl"
               placeholder="Paste a YouTube link"
-              onChange={(e) => {
-                setDescription(e.target.value);
-                const id = extractVideoId(e.target.value);
-                setVideoId(id);
-                
-              }}
+              onChange={handleDescriptionChange}
             />
             <div className="absolute flex bottom-4 left-5 gap-2 items-center">
               <PdfUploader
@@ -174,13 +157,12 @@ const CreateLesson = () => {
           {videoId && (
             <div className="mt-4 w-[768px]">
               <button
-                onClick={generateFlashcards}
+                onClick={generateFromYouTube}
                 disabled={loading}
                 className="bg-[#0353a4] hover:bg-[#023e7d] text-white font-bold py-2 px-4 rounded disabled:opacity-50"
               >
                 {loading ? "Generating..." : "Generate"}
               </button>
-
             </div>
           )}
         </div>
