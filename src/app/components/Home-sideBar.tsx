@@ -6,13 +6,14 @@ import { ChevronDown } from "lucide-react";
 import { SideBarList } from "../click/SideBarList";
 import { Profile } from "./Profile";
 import Link from "next/link";
-import { WorkspaceTab } from "./workspace-tab/Workspace-tab";
+import { WorkspaceTab } from "./workspace-tab/WorkspaceTab";
+import { useState } from "react";
 
 export const SideBar = () => {
-  
+  const [showWorkSpace, setShowWorkSpace] = useState<boolean>(false);
 
   return (
-    <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter relative ">
+    <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter absolute ">
       <div className="h-[90px] p-5 "></div>
       <div className="flex">
         <Link href={"/create"}>
@@ -32,7 +33,21 @@ export const SideBar = () => {
         </div>
       </div>
       <div>
-        <WorkspaceTab/>
+        <div className=" text-[#777777] pb-2 px-1 flex justify-between items-center text-sm font-semibold ">
+          Workspaces
+          <Button
+            onClick={() => setShowWorkSpace(true)}
+            className="bg-inherit shadow-none hover:bg-[#E8E8E8] "
+          >
+            <Plus className="text-[#777777]" />
+          </Button>
+        </div>
+        <div>
+          {showWorkSpace && (
+            <WorkspaceTab setShowWorkSpace={setShowWorkSpace} />
+          )}
+        </div>
+
         <ul>
           <SideBarList />
         </ul>
