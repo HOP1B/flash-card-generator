@@ -10,10 +10,12 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { House } from "lucide-react";
-import { BookOpenCheck } from "lucide-react";
-import { MessageCircleQuestion } from "lucide-react";
-import { Layers } from "lucide-react";
+import {
+  House,
+  BookOpenCheck,
+  MessageCircleQuestion,
+  Layers,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -57,16 +59,17 @@ function FlippCarousel() {
     const fetchTopicData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/api/topics/${topicId}`);
-        setTopicData(response.data);
-
-        // Initialize flipped states based on the number of flashcards
-        if (response.data.flashcards) {
-          setFlippedStates(Array(response.data.flashcards.length).fill(false));
+        const response = await axios.get(`/api/topics/${topicId}/flashcard`);
+        const data: TopicData = response.data;
+        if (!data || !data.flashcards) {
+          throw new Error("Invalid topic data");
         }
+        setTopicData(data);
+        setFlippedStates(Array(data.flashcards.length).fill(false));
       } catch (error) {
-        toast.error("Failed to fetch topic data");
-        console.error("Error fetching topic data:", error);
+        toast.error("Failed to fetch flashcard data");
+        console.error("Error fetching flashcard data:", error);
+        setTopicData(null);
       } finally {
         setLoading(false);
       }
@@ -94,7 +97,7 @@ function FlippCarousel() {
   if (!topicData) {
     return (
       <div className="flex justify-center items-center h-screen">
-        No topic data found
+        No flashcard data found
       </div>
     );
   }
@@ -103,33 +106,29 @@ function FlippCarousel() {
     <div className="flex flex-col justify-center items-center w-full">
       <div className="flex w-[50%] justify-between py-5 px-8 mr-[480px] mb-4">
         <div className="flex items-center">
-          <div>
-            <Link href={"/dashboard"} className="cursor-pointer">
-              <House size={18} />
-            </Link>
-          </div>
-          <div>
-            <p className="text-[#1d1d1d] text-sm font-semibold ml-[10px] flex items-center pl-[10px] h-8 border-l-2">
-              {topicData.title}
-            </p>
-          </div>
+          <Link href={"/dashboard"} className="cursor-pointer">
+            <House size={18} />
+          </Link>
+          <p className="text-[#1d1d1d] text-sm font-semibold ml-[10px] flex items-center pl-[10px] h-8 border-l-2">
+            {topicData.title}
+          </p>
         </div>
         <div className="flex gap-1">
           <Link
             href={`/topics/${topicId}/summary`}
-            className=" flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
+            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
           >
             <BookOpenCheck /> Summary
           </Link>
           <Link
             href={`/topics/${topicId}/questions`}
-            className=" flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
+            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
           >
             <MessageCircleQuestion /> Questions
           </Link>
           <Link
             href={`/topics/${topicId}/flashcard`}
-            className=" flex justify-center items-center gap-2 bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 "
+            className="flex justify-center items-center gap-2 bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2"
           >
             <Layers /> Flashcards
           </Link>

@@ -26,34 +26,32 @@ const CreateLesson = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!selectedFiles.length && !videoId) {
-      toast.error("Please add a YouTube URL or file to upload");
+    if (!selectedFiles.length) {
+      toast.error("Please upload a file if no YouTube URL is provided");
       setLoading(false);
       return;
     }
 
-    if (selectedFiles.length) {
-      setIsUploading(true);
-      const formData = new FormData();
-      selectedFiles.forEach((file) => formData.append("pdf", file));
-      formData.append("description", description);
+    setIsUploading(true);
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append("pdf", file));
+    formData.append("description", description);
 
-      try {
-        const response = await axios.post("/api/file", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+    try {
+      const response = await axios.post("/api/file", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-        if (response.data?.id) {
-          toast.success("Files uploaded successfully!");
-          router.push(`/topics/${response.data.id}`);
-        }
-      } catch (error) {
-        toast.error("Failed to upload files");
-        console.error("Upload error:", error);
-      } finally {
-        setIsUploading(false);
-        setLoading(false);
+      if (response.data?.id) {
+        toast.success("Files uploaded successfully!");
+        router.push(`/topics/${response.data.id}`);
       }
+    } catch (error) {
+      toast.error("Failed to upload files");
+      console.error("Upload error:", error);
+    } finally {
+      setIsUploading(false);
+      setLoading(false);
     }
   };
 
@@ -61,23 +59,24 @@ const CreateLesson = () => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  const generateFromYouTube = async () => {
-    if (!videoId) {
-      toast.error("Please enter a valid YouTube URL");
+  const generateFromYouTube = async (url: string) => {
+    if (!session?.user?.id) {
+      toast.error("You must be logged in to generate materials");
+      setLoading(false);
       return;
     }
 
     setLoading(true);
     try {
       const response = await axios.post("/api/youtubeUrl", {
-        url: `https://www.youtube.com/watch?v=${videoId}`,
-        userId: session?.user.id,
-        groupId: "dccxYxG1hYsBkRnimj8Nf",
+        url,
+        userId: session.user.id,
+        groupId: "dccxYxG1hYsBkRnimj8Nf", 
       });
 
       if (response.data?.id) {
         toast.success("Learning materials created!");
-        router.push(`/topics/${response.data.id}`);
+        router.push(`/topics/${response.data.id}/flashcard`); 
       }
     } catch (error) {
       toast.error("Failed to generate materials");
@@ -94,6 +93,10 @@ const CreateLesson = () => {
     setDescription(value);
     const id = extractVideoId(value);
     setVideoId(id || "");
+
+    if (id) {
+      generateFromYouTube(`https://www.youtube.com/watch?v=${id}`);
+    }
   };
 
   return (
@@ -116,6 +119,7 @@ const CreateLesson = () => {
               className="resize-none border text-foreground p-4 w-[768px] h-[165px] rounded-xl"
               placeholder="Paste a YouTube link"
               onChange={handleDescriptionChange}
+              disabled={loading}
             />
             <div className="absolute flex bottom-4 left-5 gap-2 items-center">
               <PdfUploader
@@ -154,15 +158,9 @@ const CreateLesson = () => {
             ))}
           </div>
 
-          {videoId && (
+          {loading && (
             <div className="mt-4 w-[768px]">
-              <button
-                onClick={generateFromYouTube}
-                disabled={loading}
-                className="bg-[#0353a4] hover:bg-[#023e7d] text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-              >
-                {loading ? "Generating..." : "Generate"}
-              </button>
+              <p className="text-gray-500">Generating materials...</p>
             </div>
           )}
         </div>

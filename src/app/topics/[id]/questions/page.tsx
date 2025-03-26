@@ -43,10 +43,15 @@ const Ques = () => {
       try {
         setLoading(true);
         const response = await axios.get(`/api/topics/${topicId}/quiz`);
-        setTopicData(response.data);
+        const data: TopicData = response.data;
+        if (!data.questions || data.questions.length === 0) {
+          throw new Error("No questions available");
+        }
+        setTopicData(data);
       } catch (error) {
         toast.error("Failed to fetch quiz data");
         console.error("Error fetching quiz data:", error);
+        setTopicData(null);
       } finally {
         setLoading(false);
       }
@@ -58,7 +63,9 @@ const Ques = () => {
   }, [topicId]);
 
   const handleSelect = (optionId: string) => {
-    setSelectedOption(optionId);
+    if (!selectedOption) {
+      setSelectedOption(optionId);
+    }
   };
 
   const handleNextQuestion = () => {
@@ -76,10 +83,10 @@ const Ques = () => {
     );
   }
 
-  if (!topicData) {
+  if (!topicData || !topicData.questions.length) {
     return (
       <div className="flex justify-center items-center h-screen">
-        No quiz data found
+        No quiz questions found
       </div>
     );
   }
@@ -148,9 +155,9 @@ const Ques = () => {
                       ? option.isCorrect
                         ? "bg-green-100 border-green-500"
                         : "bg-red-100 border-red-500"
-                      : "hover:bg-gray-50"
+                      : "hover:bg-gray-50 border-gray-300"
                   }`}
-                onClick={() => !selectedOption && handleSelect(option.id)}
+                onClick={() => handleSelect(option.id)}
               >
                 {option.title}
               </li>
@@ -164,13 +171,15 @@ const Ques = () => {
                   isCorrect ? "text-green-600" : "text-red-600"
                 }`}
               >
-                {isCorrect ? "Correct! 🎉" : "Incorrect, try again."}
+                {isCorrect ? "Correct! 🎉" : "Incorrect, try again next time."}
               </p>
               <button
                 onClick={handleNextQuestion}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
               >
-                Next Question
+                {currentQuestionIndex < topicData.questions.length - 1
+                  ? "Next Question"
+                  : "Restart Quiz"}
               </button>
             </div>
           )}
