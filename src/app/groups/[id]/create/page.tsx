@@ -125,6 +125,7 @@ const CreateLesson = () => {
               <PdfUploader
                 onPdfSelect={handleFileSelect}
                 onFileNameChange={() => {}}
+                
               />
               {selectedFiles.length > 0 && (
                 <button
