@@ -59,8 +59,8 @@ export async function POST(req: NextRequest) {
     const topic = await prisma.topic.create({
       data: {
         youtubeId: videoId,
-        title: rawSummaries[0]?.title,
-        summary: rawSummaries[0]?.content,
+        title: rawSummaries[0]?.title || "Untitled",
+        summary: rawSummaries[0]?.content || "",
         userId,
         group: {
           connect: {
@@ -77,8 +77,6 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-
-    console.log("Topic:", topic);
 
     const rawQuiz = await prisma.topicQuiz.create({
       data: {
@@ -122,5 +120,7 @@ export async function POST(req: NextRequest) {
       error instanceof Error ? error.message : "Internal Server Error";
     console.error("Error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
