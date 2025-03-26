@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { ClerkProvider, SignedIn } from "@clerk/nextjs";
 import { SideBar } from "./components/Home-sideBar";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const noLayoutPages = ["/questions"];
+  const {id} = useParams();
+  const noLayoutPages = [`/groups/${id}/lesson`];
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}

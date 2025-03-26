@@ -71,12 +71,12 @@ const CreateLesson = () => {
       const response = await axios.post("/api/youtubeUrl", {
         url,
         userId: session.user.id,
-        groupId: "dccxYxG1hYsBkRnimj8Nf", 
+        groupId: "dccxYxG1hYsBkRnimj8Nf",
       });
 
       if (response.data?.id) {
         toast.success("Learning materials created!");
-        router.push(`/topics/${response.data.id}/flashcard`); 
+        router.push(`/topics/${response.data.id}/flashcard`);
       }
     } catch (error) {
       toast.error("Failed to generate materials");
