@@ -22,8 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const {topicId} = useParams();
-  const noLayoutPages = [`/topics/${topicId}/flashcard`, `/topics/${topicId}/questions`];
+  const {id} = useParams();
+  const noLayoutPages = [`/topics/${id}/flashcard`, `/topics/${id}/questions`];
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}

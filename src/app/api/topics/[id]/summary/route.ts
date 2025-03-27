@@ -8,8 +8,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    
     const { id: topicId } = params; 
-
     const topic = await prisma.topic.findUnique({
       where: { id: topicId },
     });
