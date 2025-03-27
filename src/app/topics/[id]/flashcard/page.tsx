@@ -61,8 +61,8 @@ function FlippCarousel() {
         setLoading(true);
         const response = await axios.get(`/api/topics/${topicId}/flashcard`);
         const data: TopicData = response.data;
-        if (!data || !data.flashcards) {
-          throw new Error("Invalid topic data");
+        if (!data || !data.flashcards || data.flashcards.length === 0) {
+          throw new Error("No flashcards available");
         }
         setTopicData(data);
         setFlippedStates(Array(data.flashcards.length).fill(false));
@@ -89,7 +89,7 @@ function FlippCarousel() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <p className="text-lg text-gray-600">Loading flashcards...</p>
       </div>
     );
   }
@@ -97,65 +97,69 @@ function FlippCarousel() {
   if (!topicData) {
     return (
       <div className="flex justify-center items-center h-screen">
-        No flashcard data found
+        <p className="text-lg text-red-600">No flashcards found</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col justify-center items-center w-full">
-      <div className="flex w-[50%] justify-between py-5 px-8 mr-[480px] mb-4">
+      <div className="flex w-full max-w-5xl justify-between py-5 px-8 mb-9">
         <div className="flex items-center">
-          <Link href={"/dashboard"} className="cursor-pointer">
-            <House size={18} />
+          <Link href="/dashboard" className="cursor-pointer">
+            <House size={18} className="text-gray-700" />
           </Link>
-          <p className="text-[#1d1d1d] text-sm font-semibold ml-[10px] flex items-center pl-[10px] h-8 border-l-2">
+          <p className="text-[#1d1d1d] text-sm font-semibold ml-3 flex items-center pl-3 h-8 border-l-2 border-gray-300">
             {topicData.title}
           </p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-2">
           <Link
             href={`/topics/${topicId}/summary`}
-            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
+            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-3 py-1 transition duration-300"
           >
-            <BookOpenCheck /> Summary
+            <BookOpenCheck size={16} /> Summary
           </Link>
           <Link
             href={`/topics/${topicId}/questions`}
-            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2 duration-500"
+            className="flex justify-center items-center gap-2 hover:bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-3 py-1 transition duration-300"
           >
-            <MessageCircleQuestion /> Questions
+            <MessageCircleQuestion size={16} /> Questions
           </Link>
           <Link
             href={`/topics/${topicId}/flashcard`}
-            className="flex justify-center items-center gap-2 bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-2"
+            className="flex justify-center items-center gap-2 bg-[#98b8d998] text-[#1d1d1d] text-sm font-semibold rounded-lg px-3 py-1"
           >
-            <Layers /> Flashcards
+            <Layers size={16} /> Flashcards
           </Link>
         </div>
       </div>
 
-      <Carousel setApi={setApi}>
-        <CarouselContent>
-          {topicData.flashcards.map((card, index) => (
-            <CarouselItem key={card.id}>
-              <Card
-                onClick={() => toggleFlip(index)}
-                className="cursor-pointer h-[880px] shadow-lg border border-gray-300"
-              >
-                <CardContent className="flex items-center justify-center h-full text-center text-3xl font-semibold transition-transform duration-300">
-                  {flippedStates[index] ? card.answer : card.question}
-                </CardContent>
-              </Card>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
-      </Carousel>
+      <div className="flex flex-col items-center justify-center w-full max-w-3xl mt-9">
+        <Carousel setApi={setApi} className="w-full">
+          <CarouselContent>
+            {topicData.flashcards.map((card, index) => (
+              <CarouselItem key={card.id}>
+                <Card
+                  onClick={() => toggleFlip(index)}
+                  className="cursor-pointer h-[400px] shadow-lg border border-gray-200 rounded-lg transition-transform duration-300 hover:shadow-xl"
+                >
+                  <CardContent className="flex items-center justify-center h-full text-center p-6">
+                    <p className="text-xl font-semibold text-gray-800">
+                      {flippedStates[index] ? card.answer : card.question}
+                    </p>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="text-gray-600 hover:text-gray-800" />
+          <CarouselNext className="text-gray-600 hover:text-gray-800" />
+        </Carousel>
 
-      <div className="py-2 text-center text-sm text-muted-foreground">
-        Slide {current} of {count}
+        <div className="py-3 text-center text-sm text-gray-500">
+          Card {current} of {count}
+        </div>
       </div>
     </div>
   );
