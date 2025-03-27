@@ -1,6 +1,6 @@
 import { getFlashcardPrompt, flashcardModel } from "../models";
 
-export async function generateFlashcards(transcript: string): Promise<string[]> {
+export async function generateFlashcards(transcript: string): Promise<string> {
   const chunkSize = 1000;
   const sentences = transcript.split(". ");
   const chunks: string[] = [];
@@ -18,9 +18,27 @@ export async function generateFlashcards(transcript: string): Promise<string[]> 
 
   const flashcards: string[] = [];
   for (const chunk of chunks) {
-    const response = await flashcardModel.sendMessage(getFlashcardPrompt(chunk));
-    flashcards.push(response.response.text());
+    try {
+      const response = await flashcardModel.sendMessage(
+        getFlashcardPrompt(chunk)
+      );
+      const flashcardText = await response.response.text();
+      console.log(
+        `Flashcard text for chunk ${chunks.indexOf(chunk) + 1}:`,
+        flashcardText
+      );
+      if (flashcardText) {
+        flashcards.push(flashcardText);
+      }
+    } catch (error) {
+      console.error(
+        `Error generating flashcards for chunk ${chunks.indexOf(chunk) + 1}:`,
+        error
+      );
+    }
   }
 
-  return flashcards;
+  const combinedFlashcards = flashcards.join("\n");
+  console.log("Combined flashcards:", combinedFlashcards);
+  return combinedFlashcards || "";
 }

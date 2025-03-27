@@ -1,52 +1,73 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Topic } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+// Define the type for the topic with nested relations
+interface TopicWithQuizzes extends Topic {
+  quizzes?: {
+    questions?: {
+      id: string;
+      title: string;
+      options?: {
+        id: string;
+        title: string;
+        isCorrect: boolean;
+      }[];
+    }[];
+  }[];
+}
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const topicId = params.id;
+    const { id: topicId } = params; // Destructure params correctly
 
-    const topic = await prisma.topic.findUnique({
+    const topic = (await prisma.topic.findUnique({
       where: { id: topicId },
       include: {
         quizzes: {
           include: {
             questions: {
-              include: {
-                options: true,
-              },
+              include: { options: true },
             },
           },
         },
       },
-    });
+    })) as TopicWithQuizzes | null;
 
-    if (!topic || !topic.quizzes.length) {
-      return NextResponse.json(
-        { error: "No quiz found for this topic" },
-        { status: 404 }
-      );
+    if (!topic) {
+      return NextResponse.json({ error: "Topic not found" }, { status: 404 });
     }
 
-    // Assuming one quiz per topic for simplicity; take the first quiz
-    const quiz = topic.quizzes[0];
+    // Safely map questions and options
+    const questions =
+      topic.quizzes && topic.quizzes.length > 0
+        ? topic.quizzes.flatMap((quiz) =>
+            quiz.questions
+              ? quiz.questions.map((q) => ({
+                  id: q.id,
+                  title: q.title,
+                  options: q.options
+                    ? q.options.map((opt) => ({
+                        id: opt.id,
+                        title: opt.title,
+                        isCorrect: opt.isCorrect,
+                      }))
+                    : [],
+                }))
+              : []
+          )
+        : [];
+
+    console.log("Fetched quiz data:", { title: topic.title, questions }); // Debug log
 
     return NextResponse.json(
       {
         title: topic.title,
-        questions: quiz.questions.map((q) => ({
-          id: q.id,
-          title: q.title,
-          options: q.options.map((o) => ({
-            id: o.id,
-            title: o.title,
-            isCorrect: o.isCorrect,
-          })),
-        })),
+        questions,
       },
       { status: 200 }
     );

@@ -47,14 +47,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const rawQuizzes = (await generateQuizzes(transcript)).slice(1);
-    const rawFlashcards = (await generateFlashcards(transcript)).slice(1);
+    const rawQuizzes = await generateQuizzes(transcript); // Returns a string
+    const rawFlashcards = await generateFlashcards(transcript); // Returns a string
     const rawSummaries = await generateSummary(transcript);
 
-    const quizzes = rawQuizzes.map((quiz) => convertResponseToQna(quiz)).flat();
-    const flashcards = rawFlashcards
-      .map((flashcard) => convertResponseToFlashcard(flashcard))
-      .flat();
+    const quizzes = convertResponseToQna(rawQuizzes);
+    const flashcards = convertResponseToFlashcard(rawFlashcards);
+
+    console.log("Generated quizzes:", quizzes);
+    console.log("Generated flashcards:", flashcards);
+    console.log("Generated summaries:", rawSummaries);
+
+    if (!quizzes || quizzes.length === 0) {
+      console.warn("No quizzes generated for this transcript.");
+    }
 
     const topic = await prisma.topic.create({
       data: {
@@ -75,44 +81,37 @@ export async function POST(req: NextRequest) {
             })),
           },
         },
-      },
-    });
-
-    const rawQuiz = await prisma.topicQuiz.create({
-      data: {
-        topic: {
-          connect: {
-            id: topic.id,
-          },
+        quizzes: {
+          create:
+            quizzes.length > 0
+              ? {
+                  questions: {
+                    create: quizzes.map((quiz) => ({
+                      title: quiz.question,
+                      options: {
+                        create: quiz.answers.map((answer) => ({
+                          title: answer.option,
+                          isCorrect: answer.correct,
+                        })),
+                      },
+                    })),
+                  },
+                }
+              : undefined,
         },
       },
-    });
-
-    const questions = [];
-    for (const question of quizzes) {
-      const newQuestion = await prisma.topicQuizQuestion.create({
-        include: {
-          options: true,
-        },
-        data: {
-          title: question.question,
-          quiz: {
-            connect: {
-              id: rawQuiz.id,
-            },
-          },
-          options: {
-            createMany: {
-              data: question.answers.map((answer) => ({
-                title: answer.option,
-                isCorrect: answer.correct,
-              })),
+      include: {
+        quizzes: {
+          include: {
+            questions: {
+              include: { options: true },
             },
           },
         },
-      });
-      questions.push(newQuestion);
-    }
+      },
+    });
+
+    console.log("Created topic with quizzes:", topic);
 
     return NextResponse.json(topic, { status: 200 });
   } catch (error) {
