@@ -14,27 +14,54 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+
+import axios from "axios";
+import { toast } from "sonner";
+import {
+  setGroups,
+  setShowWorkSpace,
+  groups,
+} from "../../../../types/sideBarGroup";
+import { useSession } from "@clerk/nextjs";
 
 const formSchema = z.object({
-  username: z.string().min(2).max(50),
+  title: z.string().min(2).max(50),
 });
 
-type WorkspaceTab = {
-  setShowWorkSpace: Dispatch<SetStateAction<boolean>>;
-};
-
-export const WorkspaceTab = ({ setShowWorkSpace }: WorkspaceTab) => {
+export const WorkSpaceTab = ({
+  setShowWorkSpace,
+  setGroups,
+  groups,
+}: {
+  setShowWorkSpace: setShowWorkSpace;
+  setGroups: setGroups;
+  groups: groups;
+}) => {
+  const { session } = useSession();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      title: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const response = await axios.post("/api/group", {
+        ...values,
+        userId: session?.user.id,
+      });
+      console.log(response.data);
+      setGroups([...groups, response.data]);
+      toast.success("Successful.");
+      form.reset();
+    } catch (error) {
+      console.log(error);
+      toast.error("Unsuccessful!");
+    }
     console.log(values);
-  }
+  };
+
   return (
     <div className="fixed bg-[#c0c6c86a] z-30 inset-0 flex items-center justify-center">
       <div className="w-[640px] p-[30px] z-30 absolute left-[600px] bg-white rounded-xl ">
@@ -42,7 +69,7 @@ export const WorkspaceTab = ({ setShowWorkSpace }: WorkspaceTab) => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="username"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <div className="flex justify-between">

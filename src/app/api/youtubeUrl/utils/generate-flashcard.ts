@@ -17,28 +17,32 @@ export async function generateFlashcards(transcript: string): Promise<string> {
   if (currentChunk) chunks.push(currentChunk);
 
   const flashcards: string[] = [];
-  for (const chunk of chunks) {
-    try {
-      const response = await flashcardModel.sendMessage(
-        getFlashcardPrompt(chunk)
-      );
-      const flashcardText = await response.response.text();
-      console.log(
-        `Flashcard text for chunk ${chunks.indexOf(chunk) + 1}:`,
-        flashcardText
-      );
-      if (flashcardText) {
-        flashcards.push(flashcardText);
-      }
-    } catch (error) {
-      console.error(
-        `Error generating flashcards for chunk ${chunks.indexOf(chunk) + 1}:`,
-        error
-      );
+  const chunk = chunks[1];
+  try {
+    const response = await flashcardModel.sendMessage(
+      getFlashcardPrompt(chunk)
+    );
+    const flashcardText = await response.response.text();
+    console.log(
+      `Flashcard text for chunk ${chunks.indexOf(chunk) + 1}:`,
+      flashcardText
+    );
+    if (flashcardText) {
+      flashcards.push(flashcardText);
     }
+  } catch (error) {
+    console.error(
+      `Error generating flashcards for chunk ${chunks.indexOf(chunk) + 1}:`,
+      error
+    );
   }
 
-  const combinedFlashcards = flashcards.join("\n");
+  const combinedFlashcards = flashcards
+    .join("")
+    .split("\n")
+    .filter((line) => line.trim() !== "\n")
+    .filter((line) => line.trim() !== "")
+    .join("\n");
   console.log("Combined flashcards:", combinedFlashcards);
   return combinedFlashcards || "";
 }

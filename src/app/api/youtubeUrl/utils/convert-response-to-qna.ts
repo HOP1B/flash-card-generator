@@ -1,32 +1,42 @@
-export function convertResponseToQna(response: string) {
-  const lines = response.split("\n").filter((line) => line.trim() !== "");
+export function convertResponseToQna(inputString: string) {
   const qna: {
     question: string;
     answers: { option: string; correct: boolean }[];
   }[] = [];
-  let currentQuestion = "";
-  let answers: { option: string; correct: boolean }[] = [];
 
-  for (const line of lines) {
-    if (/^\d+\.\s*.*\?$/.test(line)) {
-      
-      if (currentQuestion && answers.length > 0) {
-        qna.push({ question: currentQuestion, answers });
-      }
-      currentQuestion = line.replace(/^\d+\.\s*/, "").trim();
-      answers = [];
-    } else if (line.startsWith("-")) {
-      const option = line.replace(/-\s*/, "").trim();
-      const isCorrect = option.includes("(correct)");
-      const cleanOption = option.replace(/\s*\(correct\)/, "").trim();
-      answers.push({ option: cleanOption, correct: isCorrect });
-    }
-  }
+  // Split the input string by "**Question" and iterate through each question block
+  const questionBlocks = inputString.split("**Question").slice(1);
 
-  if (currentQuestion && answers.length > 0) {
-    qna.push({ question: currentQuestion, answers });
-  }
+  questionBlocks.forEach((block) => {
+    // Split the block into question and answers
+    const [questionPart, ...answerParts] = block
+      .split("\n")
+      .filter((line) => line.trim() !== "");
 
-  console.log("Parsed QnA:", qna);
+    // Extract the question text
+    const questionText = questionPart.replace(/^\d+:/, "").trim(); // Remove the question number and colon
+
+    const answers: { option: string; correct: boolean }[] = [];
+
+    // Extract the answers
+    answerParts.forEach((answerText, index) => {
+      const answerMatch = answerText.split(":").map((item) => item.trim());
+      const answerOption = answerMatch[1];
+
+      answers.push({
+        option: answerOption,
+        correct: index === 0, // Assume first answer is correct
+      });
+    });
+
+    // Push the question and answers to the array
+    qna.push({
+      question: questionText,
+      answers,
+    });
+  });
+
+  console.log(JSON.stringify(qna, null, 2));
+
   return qna;
 }

@@ -1,42 +1,48 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { Compass } from "lucide-react";
-import { ChevronDown } from "lucide-react";
-import { SideBarList } from "../click/SideBarList";
+import { SideBarList } from "./SideBarList";
 import { Profile } from "./Profile";
 import Link from "next/link";
-import { WorkspaceTab } from "./workspace-tab/WorkspaceTab";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useSession } from "@clerk/nextjs";
+import { useParams } from "next/navigation";
+import { Group } from "../../../types/sideBarGroup";
+import { WorkSpaceTab } from "./workspace-tab/WorkspaceTab";
 
 export const SideBar = () => {
+  const { session } = useSession();
   const [showWorkSpace, setShowWorkSpace] = useState<boolean>(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const { id } = useParams();
+
+  useEffect(() => {
+    if (session?.user.id) {
+      axios.get(`/api/group?userId=${session?.user.id}`).then((res) => {
+        setGroups(res.data);
+      });
+    }
+  }, [session]);
 
   return (
     <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter absolute ">
       <div className="h-[90px] p-5 "></div>
-      <div className="flex">
-        <Link href={"/create"}>
-          <Button className=" bg-[#0353a4] text-base font-semibold w-[234px] py-[10px] px-3 rounded-r-none hover:bg-[#023e7d] ">
+      <div className="w-full">
+        <Link href={`/groups/${id}/create`}>
+          <Button className=" bg-[#0353a4] text-base font-semibold py-[10px] px-3 w-full hover:bg-[#023e7d] ">
             <Plus /> New Lesson
           </Button>
         </Link>
-
-        <Button className="bg-[#023e7d] rounded-l-none w-9 hover:bg-[#023e7d] ">
-          <ChevronDown />
-        </Button>
       </div>
 
-      <div className="p-1 py-7">
-        <div className="flex text-[#1d1d1d] text-sm font-semibold items-center gap-1 ">
-          <Compass size={16} /> Explore Courses
-        </div>
-      </div>
       <div>
-        <div className=" text-[#777777] pb-2 px-1 flex justify-between items-center text-sm font-semibold ">
+        <div className=" text-[#777777] mt-8 pb-2 px-1 flex justify-between items-center text-sm font-semibold ">
           Workspaces
           <Button
-            onClick={() => setShowWorkSpace(true)}
+            onClick={() => {
+              setShowWorkSpace(true);
+            }}
             className="bg-inherit shadow-none hover:bg-[#E8E8E8] "
           >
             <Plus className="text-[#777777]" />
@@ -44,12 +50,18 @@ export const SideBar = () => {
         </div>
         <div>
           {showWorkSpace && (
-            <WorkspaceTab setShowWorkSpace={setShowWorkSpace} />
+            <WorkSpaceTab
+              setShowWorkSpace={setShowWorkSpace}
+              setGroups={setGroups}
+              groups={groups}
+            />
           )}
         </div>
 
         <ul>
-          <SideBarList />
+          {groups.map((data) => (
+            <SideBarList active={data.id === id} key={data.id} data={data} />
+          ))}
         </ul>
       </div>
       <Profile />

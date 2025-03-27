@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import {
   convertResponseToFlashcard,
@@ -54,10 +55,6 @@ export async function POST(req: NextRequest) {
     const quizzes = convertResponseToQna(rawQuizzes);
     const flashcards = convertResponseToFlashcard(rawFlashcards);
 
-    console.log("Generated quizzes:", quizzes);
-    console.log("Generated flashcards:", flashcards);
-    console.log("Generated summaries:", rawSummaries);
-
     if (!quizzes || quizzes.length === 0) {
       console.warn("No quizzes generated for this transcript.");
     }
@@ -110,8 +107,6 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-
-    console.log("Created topic with quizzes:", topic);
 
     return NextResponse.json(topic, { status: 200 });
   } catch (error) {

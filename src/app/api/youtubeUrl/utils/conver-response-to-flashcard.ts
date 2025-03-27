@@ -1,25 +1,30 @@
-export function convertResponseToFlashcard(response: string) {
-  const lines = response.split("\n").filter((line) => line.trim() !== "");
+export function convertResponseToFlashcard(inputString: string) {
   const flashcards: { question: string; answer: string }[] = [];
-  let currentQuestion = "";
-  let currentAnswer = "";
 
-  for (const line of lines) {
-    if (line.startsWith("Q: ")) {
-      if (currentQuestion && currentAnswer) {
-        flashcards.push({ question: currentQuestion, answer: currentAnswer });
-      }
-      currentQuestion = line.replace("Q: ", "").trim();
-      currentAnswer = "";
-    } else if (line.startsWith("A: ")) {
-      currentAnswer = line.replace("A: ", "").trim();
+  // Split the input string by '**Flashcard' and process each flashcard block
+  const flashcardBlocks = inputString.split("**Flashcard").slice(1);
+
+  flashcardBlocks.forEach((block) => {
+    // Split the block into lines and filter out any empty lines
+    const lines = block.split("\n").filter((line) => line.trim() !== "");
+
+    // Extract question and answer from the lines
+    const questionLine = lines.find((line) =>
+      line.startsWith("* **Question:**")
+    );
+    const answerLine = lines.find((line) => line.startsWith("* **Answer:**"));
+
+    if (questionLine && answerLine) {
+      const questionText = questionLine.replace("* **Question:**", "").trim();
+      const answerText = answerLine.replace("* **Answer:**", "").trim();
+
+      // Push the extracted question and answer into the flashcards array
+      flashcards.push({
+        question: questionText,
+        answer: answerText,
+      });
     }
-  }
+  });
 
-  if (currentQuestion && currentAnswer) {
-    flashcards.push({ question: currentQuestion, answer: currentAnswer });
-  }
-
-  console.log("Parsed flashcards:", flashcards);
   return flashcards;
 }

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,7 +14,6 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 import ReactMarkdown, { Components } from "react-markdown";
-import { ReactMarkdownProps } from "react-markdown/lib/complex-types";
 
 interface TopicData {
   title: string;
@@ -66,27 +67,26 @@ const SummaryPage = () => {
     );
   }
 
-
   const markdownComponents: Components = {
-    h1: ({ node, ...props }: ReactMarkdownProps) => (
+    h1: ({ node, ...props }: any) => (
       <h1 className="text-2xl font-bold mt-6 mb-4 text-gray-900" {...props} />
     ),
-    h2: ({ node, ...props }: ReactMarkdownProps) => (
+    h2: ({ node, ...props }: any) => (
       <h2
         className="text-xl font-semibold mt-5 mb-3 text-gray-900"
         {...props}
       />
     ),
-    ul: ({ node, ...props }: ReactMarkdownProps) => (
+    ul: ({ node, ...props }: any) => (
       <ul className="list-disc list-outside ml-5 space-y-2" {...props} />
     ),
-    ol: ({ node, ...props }: ReactMarkdownProps) => (
+    ol: ({ node, ...props }: any) => (
       <ol className="list-decimal list-outside ml-5 space-y-2" {...props} />
     ),
-    li: ({ node, ...props }: ReactMarkdownProps) => (
+    li: ({ node, ...props }: any) => (
       <li className="text-gray-700 leading-relaxed" {...props} />
     ),
-    p: ({ node, ...props }: ReactMarkdownProps) => (
+    p: ({ node, ...props }: any) => (
       <p className="text-gray-700 leading-relaxed mb-4" {...props} />
     ),
   };

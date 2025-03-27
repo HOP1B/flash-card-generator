@@ -3,20 +3,27 @@ import { PdfUploader } from "./pdfUploader";
 import { useState } from "react";
 import { Forward, File } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { toast } from "sonner";
 import { useSession } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { extractVideoId } from "@/app/api/youtubeUrl/utils/extract-video-id";
+import { useParams, useRouter } from "next/navigation";
 
 const CreateLesson = () => {
   const router = useRouter();
   const { session } = useSession();
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [videoId, setVideoId] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [videoId, setVideoId] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const { id } = useParams();
+
+  const extractVideoId = (url: string): string => {
+    const regex =
+      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : "";
+  };
 
   const handleFileSelect = (file: File) => {
     setSelectedFiles((prev) => [...prev, file]);
@@ -26,31 +33,42 @@ const CreateLesson = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!selectedFiles.length) {
-      toast.error("Please upload a file if no YouTube URL is provided");
+    if (!selectedFiles.length && !videoId.trim()) {
+      toast.error("Please add a YouTube URL or file to upload");
       setLoading(false);
       return;
     }
 
-    setIsUploading(true);
-    const formData = new FormData();
-    selectedFiles.forEach((file) => formData.append("pdf", file));
-    formData.append("description", description);
+    if (selectedFiles.length) {
+      setIsUploading(true);
+      const formData = new FormData();
+      selectedFiles.forEach((file) => formData.append("pdf", file));
+      formData.append("description", description);
 
-    try {
-      const response = await axios.post("/api/file", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      try {
+        const response: AxiosResponse = await axios.post(
+          "/api/file",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
-      if (response.data?.id) {
-        toast.success("Files uploaded successfully!");
-        router.push(`/topics/${response.data.id}`);
+        if (response.status === 200) {
+          toast.success("Files uploaded successfully!");
+          setDescription("");
+          setSelectedFiles([]);
+        }
+      } catch (error) {
+        toast.error("Failed to upload files");
+        console.error("Upload error:", error);
+      } finally {
+        setIsUploading(false);
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error("Failed to upload files");
-      console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
+    } else {
       setLoading(false);
     }
   };
@@ -59,43 +77,35 @@ const CreateLesson = () => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  const generateFromYouTube = async (url: string) => {
-    if (!session?.user?.id) {
-      toast.error("You must be logged in to generate materials");
-      setLoading(false);
-      return;
-    }
-
+  const generateFlashcards = async () => {
     setLoading(true);
     try {
-      const response = await axios.post("/api/youtubeUrl", {
-        url,
-        userId: session.user.id,
-        groupId: "dccxYxG1hYsBkRnimj8Nf", 
-      });
-
-      if (response.data?.id) {
-        toast.success("Learning materials created!");
-        router.push(`/topics/${response.data.id}/flashcard`); 
+      const response: AxiosResponse<{ id: string }> = await axios.post(
+        "/api/youtubeUrl",
+        {
+          url: `https://www.youtube.com/watch?v=${videoId}`,
+          userId: session?.user.id,
+          groupId: "dccxYxG1hYsBkRnimj8Nf",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      toast.success("Video response generated successfully!");
+      router.replace(`/topics/${response.data.id}/summary`);
+    } catch (error: unknown) {
+      console.error("API Error:", error);
+      if (axios.isAxiosError(error)) {
+        toast.error(
+          error.response?.data?.error || "Failed to generate flashcards"
+        );
+      } else {
+        toast.error("An unexpected error occurred");
       }
-    } catch (error) {
-      toast.error("Failed to generate materials");
-      console.error("Generation error:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDescriptionChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    const value = e.target.value;
-    setDescription(value);
-    const id = extractVideoId(value);
-    setVideoId(id || "");
-
-    if (id) {
-      generateFromYouTube(`https://www.youtube.com/watch?v=${id}`);
     }
   };
 
@@ -118,8 +128,11 @@ const CreateLesson = () => {
               value={description}
               className="resize-none border text-foreground p-4 w-[768px] h-[165px] rounded-xl"
               placeholder="Paste a YouTube link"
-              onChange={handleDescriptionChange}
-              disabled={loading}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                const id = extractVideoId(e.target.value);
+                setVideoId(id);
+              }}
             />
             <div className="absolute flex bottom-4 left-5 gap-2 items-center">
               <PdfUploader
@@ -132,7 +145,9 @@ const CreateLesson = () => {
                   disabled={isUploading || loading}
                   className="rounded-full bg-[#caf0f8] h-9 w-9 items-center justify-center flex disabled:opacity-50"
                 >
-                  <Forward style={{ color: "#00072D" }} />
+                  <Link href={`/topics/${id}/questions`}>
+                    <Forward style={{ color: "#00072D" }} />
+                  </Link>
                 </button>
               )}
             </div>
@@ -158,9 +173,15 @@ const CreateLesson = () => {
             ))}
           </div>
 
-          {loading && (
+          {videoId && (
             <div className="mt-4 w-[768px]">
-              <p className="text-gray-500">Generating materials...</p>
+              <button
+                onClick={generateFlashcards}
+                disabled={loading}
+                className="bg-[#0353a4] hover:bg-[#023e7d] text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+              >
+                {loading ? "Generating..." : "Generate"}
+              </button>
             </div>
           )}
         </div>

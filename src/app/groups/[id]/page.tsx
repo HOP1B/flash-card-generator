@@ -3,25 +3,25 @@ import { useSession } from "@clerk/nextjs";
 import axios from "axios";
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useParams,  } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Group } from "../../../../types/sideBarGroup";
 
-export default function Maincreater() {
-  const router = useRouter();
+export default function GroupIndex() {
+  const [group, setGroup] = useState<Group | null>(null);
   const { session } = useSession();
 
+  const { id } = useParams();
+
   useEffect(() => {
-    if (session?.user.id) {
-      axios.get(`/api/group?userId=${session?.user.id}`).then((res) => {
-        if (res.data.length > 0) {
-          router.replace(`/groups/${res.data[0].id}`);
-        }
-      });
-    }
-  }, [session]);
+    axios.get(`/api/groups/${id}`).then((res) => {
+      setGroup(res.data);
+    });
+  }, [id]);
+
   return (
     <div className="min-h-screen w-full flex justify-center items-center">
-      <Link href={"/groups"} className="cursor-pointer">
+      <Link href={`/groups/${id}/create`} className="cursor-pointer">
         <div className="py-5 px-4 bg-[#caf0f8] w-[300px] h-[236px] flex items-center justify-center flex-col border rounded-xl border-[#0E6BA8] hover:bg-[#ade8f4] duration-500">
           <div className="border rounded-full w-[56px] border-[#0E6BA8] h-[56px] flex items-center justify-center">
             <BookOpen style={{ color: "#0E6BA8" }} />
