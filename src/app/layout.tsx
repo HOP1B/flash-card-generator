@@ -23,7 +23,11 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const {id} = useParams();
-  const noLayoutPages = [`/topics/${id}/flashcard`, `/topics/${id}/questions`];
+  const noLayoutPages = [
+    `/topics/${id}/flashcard`,
+    `/topics/${id}/questions`,
+    `/topics/${id}/summary`,
+  ];
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}

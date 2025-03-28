@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     
-    const { id: topicId } = params; 
+    const { id: topicId } = await params; 
     const topic = await prisma.topic.findUnique({
       where: { id: topicId },
     });

@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { BookOpenText } from "lucide-react";
 
 type Group = Prisma.GroupGetPayload<{
   include: {
@@ -26,20 +27,27 @@ const Discover = () => {
     }
   }, [id]);
 
-  if (!group) return <>Group not found!</>
+  if (!group) return <>Group not found!</>;
 
   return (
-    <div className="max-w-3xl justify-between mx-auto mt-28 p-6">
-      <Link href={`groups/${id}/create`}>
-        <div className="flex-1 max-w-2xl p-4 bg-purple-100 rounded-xl text-center mb-12 ">
-          <h2 className="font-semibold text-lg hover:cursor-pointer ">
-            Start a Lesson
-          </h2>
-          <p className="text-sm text-gray-600">Learn something new!</p>
-        </div>
-      </Link>
+    <div className="w-[788px] mx-auto mt-28 p-6">
+      <div className="flex justify-center">
+        <Link href={`/groups/${id}/create`}>
+          <div className="flex gap-6 w-[400px] p-4 bg-blue-50 items-center justify-center rounded-xl border text-center mb-12  ">
+            <div className="w-10 h-10 flex justify-center items-center bg-white rounded-full ">
+              <BookOpenText className="text-blue-800 " size={28} />
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg hover:cursor-pointer ">
+                Start a Lesson
+              </h2>
+              <p className="text-sm text-gray-600">Learn something new!</p>
+            </div>
+          </div>
+        </Link>
+      </div>
 
-      <ul className="space-y-4">
+      <ul className="space-y-4  border-t border-solid border-gray-200 py-10">
         {group.topics.map((topic, index) => (
           <li
             key={index}
@@ -64,6 +72,5 @@ const Discover = () => {
     </div>
   );
 };
-
 
 export default Discover;

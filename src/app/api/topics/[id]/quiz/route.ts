@@ -20,10 +20,10 @@ interface TopicWithQuizzes extends Topic {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: topicId } = params; // Destructure params correctly
+    const { id: topicId } = await params; // Destructure params correctly
 
     const topic = (await prisma.topic.findUnique({
       where: { id: topicId },

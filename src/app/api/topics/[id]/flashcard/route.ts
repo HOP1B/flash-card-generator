@@ -3,7 +3,6 @@ import { PrismaClient, Topic } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-
 interface TopicWithFlashcards extends Topic {
   flashcards?: {
     id: string;
@@ -14,10 +13,10 @@ interface TopicWithFlashcards extends Topic {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: topicId } = params; 
+    const { id: topicId } = await params;
 
     const topic = (await prisma.topic.findUnique({
       where: { id: topicId },
