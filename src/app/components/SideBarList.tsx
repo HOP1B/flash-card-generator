@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { SideBarTopic } from "../../../types/sideBarGroup";
+import { useRouter } from "next/navigation";
 
 export const SideBarList = ({ data, active }: SideBarTopic) => {
- 
-
+  const router = useRouter();
   return (
-    <li >
+    <li onClick={() => {router.push(`/groups/${data.id}/discovery`)}}>
       <Link
         href={`/groups/${data.id}`}
         data-active={active}

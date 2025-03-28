@@ -10,6 +10,7 @@ import { useSession } from "@clerk/nextjs";
 import { useParams } from "next/navigation";
 import { Group } from "../../../types/sideBarGroup";
 import { WorkSpaceTab } from "./workspace-tab/WorkspaceTab";
+import Image from "next/image";
 
 export const SideBar = () => {
   const { session } = useSession();
@@ -27,7 +28,10 @@ export const SideBar = () => {
 
   return (
     <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter absolute ">
-      <div className="h-[90px] p-5 "></div>
+      <div className="h-[90px] py-5 mb-2 flex gap-2 ">
+        <Image alt="" src={"/mlogo.png"} width={40} height={30} />
+        <p className="font-extrabold text-2xl">FlashcardM</p>
+      </div>
       <div className="w-full">
         <Link href={`/groups/${id}/create`}>
           <Button className=" bg-[#0353a4] text-base font-semibold py-[10px] px-3 w-full hover:bg-[#023e7d] ">

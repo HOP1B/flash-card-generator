@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
 
     const quizzes = convertResponseToQna(rawQuizzes);
     const flashcards = convertResponseToFlashcard(rawFlashcards);
+    console.log({ flashcards });
 
     if (!quizzes || quizzes.length === 0) {
       console.warn("No quizzes generated for this transcript.");
