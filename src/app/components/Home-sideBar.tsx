@@ -28,8 +28,8 @@ export const SideBar = () => {
 
   return (
     <div className="max-w-80 h-[100dvh] bg-[#f8f8f8] p-6 font-inter absolute ">
-      <div className="h-[90px] py-5 mb-2 flex gap-2 ">
-        <Image alt="" src={"/mlogo.png"} width={40} height={30} />
+      <div className="h-[90px] py-5 mb-2 flex items-center gap-2 ">
+        <Image alt="" src={"/mlogo.png"} width={50} height={40} />
         <p className="font-extrabold text-2xl">FlashcardM</p>
       </div>
       <div className="w-full">

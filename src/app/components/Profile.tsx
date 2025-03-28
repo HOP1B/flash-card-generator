@@ -12,11 +12,11 @@ export const Profile = () => {
         <AvatarImage src={session?.user.imageUrl} />
         <AvatarFallback>{session?.user.fullName![0]} </AvatarFallback>
       </Avatar>
-      <div className="mr-10">
-        <div className=" text-[#1d1d1d] text-sm font-semibold">
+      <div className="mr-10 overflow-hidden">
+        <div className=" text-[#1d1d1d] text-sm line-clamp-1 max-w-full overflow-hidden font-semibold">
           {session?.user.fullName}
         </div>
-        <div className="text-[#777777] font-semibold text-xs">
+        <div className="text-[#777777] line-clamp-1 max-w-full overflow-hidden font-semibold text-xs">
           {session?.user?.primaryEmailAddress?.emailAddress}
         </div>
       </div>

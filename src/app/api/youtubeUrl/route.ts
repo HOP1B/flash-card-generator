@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const rawQuizzes = await generateQuizzes(transcript); // Returns a string
     const rawFlashcards = await generateFlashcards(transcript); // Returns a string
     const rawSummaries = await generateSummary(transcript);
-
+    
     const quizzes = convertResponseToQna(rawQuizzes);
     const flashcards = convertResponseToFlashcard(rawFlashcards);
     console.log({ flashcards });
